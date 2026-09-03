@@ -1,0 +1,8 @@
+{
+  "name": "Shloks copy of Pulsera",
+  "description": "AI-powered patient health monitoring platform merging patient vitals and hospital data for real-time risk analysis.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": []
+}

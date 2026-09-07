@@ -1,9 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { DeviceIntegration } from '../types';
+import { DeviceIntegration, Patient } from '../types';
 import { dataService } from '../services/dataService';
+import { PpgAnalyzer } from '../components/PpgAnalyzer';
 
-export const DevicesPage: React.FC = () => {
+interface Props {
+  onPatientUpdated?: (patient: Patient) => void;
+}
+
+export const DevicesPage: React.FC<Props> = ({ onPatientUpdated }) => {
   const [devices, setDevices] = useState<DeviceIntegration[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -35,8 +40,8 @@ export const DevicesPage: React.FC = () => {
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
         <div className="flex justify-between items-center">
             <div>
-                <h2 className="text-2xl font-bold text-slate-800">Connected Wearables</h2>
-                <p className="text-sm text-slate-500">Manage your fitness trackers and medical devices.</p>
+                <h2 className="text-2xl font-bold text-slate-800">Connected Wearables & Biosignals</h2>
+                <p className="text-sm text-slate-500">Manage your fitness trackers, medical devices, and analyze raw pulse waves.</p>
             </div>
             <button 
                 onClick={handleSyncAll}
@@ -48,6 +53,13 @@ export const DevicesPage: React.FC = () => {
                 </svg>
                 {isSyncing ? 'Syncing Data...' : 'Sync All'}
             </button>
+        </div>
+
+        {/* Wearable PPG Biosignal Analyzer */}
+        <PpgAnalyzer onPatientUpdated={onPatientUpdated} />
+
+        <div className="pt-2">
+          <h3 className="text-sm font-bold text-zinc-700 uppercase tracking-wider mb-3">Sync Connected Trackers</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

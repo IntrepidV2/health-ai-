@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { dataService } from './services/dataService';
+import { apiClient } from './services/apiClient';
 import { Patient, Appointment } from './types';
 import { Navbar } from './components/Sidebar';
 import { ChatInterface } from './components/ChatInterface';
@@ -25,9 +25,50 @@ const App: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
-    setPatient(dataService.getPatient());
-    setAppointments(dataService.getAppointments());
+    const initApp = async () => {
+      const token = apiClient.getToken();
+      if (token) {
+        try {
+          const [fetchedPatient, fetchedApts] = await Promise.all([
+            dataService.fetchPatient(),
+            dataService.fetchAppointments(),
+          ]);
+          setPatient(fetchedPatient);
+          setAppointments(fetchedApts);
+          setAppState('DASHBOARD');
+          return;
+        } catch (err) {
+          console.warn('Token validation failed, clearing token:', err);
+          apiClient.setToken(null);
+        }
+      }
+      // Fallback
+      setPatient(dataService.getPatient());
+      setAppointments(dataService.getAppointments());
+    };
+
+    initApp();
   }, []);
+
+  const handleLoginSuccess = async () => {
+    try {
+      const [fetchedPatient, fetchedApts] = await Promise.all([
+        dataService.fetchPatient(),
+        dataService.fetchAppointments(),
+      ]);
+      setPatient(fetchedPatient);
+      setAppointments(fetchedApts);
+    } catch (err) {
+      console.warn('Using local patient after login:', err);
+    }
+    setAppState('DASHBOARD');
+  };
+
+  const handleSignOut = () => {
+    apiClient.setToken(null);
+    setPatient(null);
+    setAppState('LOGIN');
+  };
 
   const handlePatientUpdate = (updated: Patient) => {
     setPatient(updated);
@@ -46,41 +87,41 @@ const App: React.FC = () => {
   const renderDashboardContent = () => {
     if (!patient) return null;
 
-    switch(currentView) {
-        case 'overview': 
-            return (
-              <Overview 
-                patient={patient} 
-                appointments={appointments}
-                onPatientUpdate={handlePatientUpdate} 
-                onNavigate={setCurrentView} 
-              />
-            );
-        case 'vitals':
-            return <VitalsPage patient={patient} />;
-        case 'appointments':
-            return (
-              <AppointmentsPage 
-                appointments={appointments} 
-                onAddAppointment={handleAddAppointment} 
-                onRemoveAppointment={handleRemoveAppointment}
-              />
-            );
-        case 'documents':
-            return <DocumentsPage patient={patient} />;
-        case 'settings':
-            return <SettingsPage />;
-        case 'wearables':
-            return <DevicesPage />;
-        default:
-            return (
-              <Overview 
-                patient={patient} 
-                appointments={appointments}
-                onPatientUpdate={handlePatientUpdate} 
-                onNavigate={setCurrentView} 
-              />
-            );
+    switch (currentView) {
+      case 'overview':
+        return (
+          <Overview
+            patient={patient}
+            appointments={appointments}
+            onPatientUpdate={handlePatientUpdate}
+            onNavigate={setCurrentView}
+          />
+        );
+      case 'vitals':
+        return <VitalsPage patient={patient} />;
+      case 'appointments':
+        return (
+          <AppointmentsPage
+            appointments={appointments}
+            onAddAppointment={handleAddAppointment}
+            onRemoveAppointment={handleRemoveAppointment}
+          />
+        );
+      case 'documents':
+        return <DocumentsPage patient={patient} />;
+      case 'settings':
+        return <SettingsPage patient={patient} />;
+      case 'wearables':
+        return <DevicesPage onPatientUpdated={handlePatientUpdate} />;
+      default:
+        return (
+          <Overview
+            patient={patient}
+            appointments={appointments}
+            onPatientUpdate={handlePatientUpdate}
+            onNavigate={setCurrentView}
+          />
+        );
     }
   };
 
@@ -89,27 +130,43 @@ const App: React.FC = () => {
   }
 
   if (appState === 'LANDING') {
-      return <LandingPage onGetStarted={() => setAppState('LOGIN')} onPrivacy={() => setAppState('PRIVACY')} />;
+    return (
+      <LandingPage
+        onGetStarted={() => setAppState('LOGIN')}
+        onPrivacy={() => setAppState('PRIVACY')}
+      />
+    );
   }
 
   if (appState === 'LOGIN') {
-      return <LoginPage onLogin={() => setAppState('DASHBOARD')} onBack={() => setAppState('LANDING')} />;
+    return (
+      <LoginPage
+        onLogin={handleLoginSuccess}
+        onBack={() => setAppState('LANDING')}
+      />
+    );
   }
 
-  if (!patient) return <div className="min-h-screen flex items-center justify-center bg-zinc-50 text-red-600 font-medium">Loading Pulsera Dashboard...</div>;
+  if (!patient)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 text-red-600 font-medium">
+        Loading Pulsera Dashboard...
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-zinc-50 font-inter text-zinc-900 flex flex-col">
-      <Navbar 
-        currentView={currentView} 
-        setCurrentView={setCurrentView} 
-        onGoHome={() => setAppState('LANDING')} 
+      <Navbar
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        onGoHome={handleSignOut}
+        patient={patient}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 animate-in fade-in duration-500">
-          {renderDashboardContent()}
+        {renderDashboardContent()}
       </main>
-      
+
       <ChatInterface patient={patient} />
     </div>
   );

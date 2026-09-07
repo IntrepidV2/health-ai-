@@ -26,8 +26,8 @@ export const LandingPage: React.FC<Props> = ({ onGetStarted, onPrivacy }) => {
       </div>
 
       {/* Navbar - Floating Glass */}
-      <nav className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
-        <div className="bg-white/70 backdrop-blur-xl border border-white/50 shadow-sm rounded-full px-6 py-3 flex items-center justify-between gap-12 max-w-2xl w-full">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-[env(safe-area-inset-top,0px)]">
+        <div className="mt-3 bg-white/70 backdrop-blur-xl border border-white/50 shadow-sm rounded-full px-4 py-2.5 flex items-center justify-between gap-8 max-w-2xl w-full">
             <div className="flex items-center gap-2">
                 <div className="w-6 h-6 text-red-600">
                     <PulseLogo className="w-full h-full" />
@@ -35,16 +35,16 @@ export const LandingPage: React.FC<Props> = ({ onGetStarted, onPrivacy }) => {
                 <span className="font-bold text-lg tracking-tight">Pulsera</span>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
                 <button 
                     onClick={onPrivacy}
-                    className="text-sm font-medium text-zinc-600 hover:text-zinc-900 px-4 py-2 rounded-full hover:bg-zinc-100 transition-colors"
+                    className="text-sm font-medium text-zinc-600 hover:text-zinc-900 px-3 py-1.5 rounded-full hover:bg-zinc-100 transition-colors"
                 >
                     Privacy
                 </button>
                 <button 
                     onClick={onGetStarted}
-                    className="bg-zinc-900 text-white text-sm font-medium px-5 py-2 rounded-full hover:bg-black hover:scale-105 transition-all shadow-lg shadow-zinc-900/20"
+                    className="bg-zinc-900 text-white text-sm font-medium px-4 py-1.5 rounded-full hover:bg-black hover:scale-105 transition-all shadow-lg shadow-zinc-900/20"
                 >
                     Get Started
                 </button>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { chatWithAssistant } from '../services/geminiService';
+import { apiClient } from '../services/apiClient';
 import { Patient } from '../types';
 
 interface ChatInterfaceProps {
@@ -87,21 +87,34 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ patient }) => {
       parts: [{ text: m.text }]
     }));
 
-    const response = await chatWithAssistant(history, userMsg, patient || undefined);
-    
-    setMessages(prev => [...prev, { 
-      role: 'model', 
-      text: response.text,
-      grounding: response.groundingChunks
-    }]);
-    setIsLoading(false);
+    try {
+      const response = await apiClient.post<{ text: string; groundingChunks?: any[] }>(
+        '/api/ai/chat',
+        { history, message: userMsg }
+      );
+      
+      setMessages(prev => [...prev, { 
+        role: 'model', 
+        text: response.text,
+        grounding: response.groundingChunks
+      }]);
+    } catch (err) {
+      console.error('Chat error:', err);
+      setMessages(prev => [...prev, {
+        role: 'model',
+        text: "I am having trouble connecting to the backend server. Please make sure the server is running."
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) {
     return (
       <button 
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-16 h-16 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-zinc-100 flex items-center justify-center z-50 hover:scale-105 transition-transform duration-300 group overflow-hidden"
+        className="fixed right-6 z-50 w-16 h-16 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-zinc-100 flex items-center justify-center hover:scale-105 transition-transform duration-300 group overflow-hidden"
+        style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="w-full h-full p-3 text-red-600 group-hover:rotate-6 transition-transform duration-300">
             <PulseLogo className="w-full h-full" />
@@ -113,14 +126,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ patient }) => {
   // Styles based on expansion state
   const containerClasses = isExpanded 
     ? "fixed inset-0 z-50 bg-white flex flex-col animate-in fade-in duration-200" 
-    : "fixed bottom-6 right-6 w-[400px] h-[600px] z-50 flex flex-col bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-zinc-200 animate-in slide-in-from-bottom-5";
+    : "fixed left-3 right-3 z-50 flex flex-col bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-zinc-200 animate-in slide-in-from-bottom-5";
+  
+  const containerStyle = isExpanded ? {} : { bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', maxHeight: '80vh' };
 
   const contentClasses = isExpanded 
     ? "max-w-3xl w-full mx-auto h-full flex flex-col" 
     : "flex flex-col h-full";
 
   return (
-    <div className={containerClasses}>
+    <div className={containerClasses} style={containerStyle}>
       {/* Header */}
       <div className={`flex items-center justify-between p-4 ${isExpanded ? 'max-w-3xl w-full mx-auto' : ''} border-b border-zinc-100 bg-white`}>
         <div className="flex items-center gap-3">
@@ -225,7 +240,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ patient }) => {
       </div>
 
       {/* Input Area */}
-      <div className={`p-4 ${isExpanded ? 'max-w-3xl w-full mx-auto pb-8' : 'bg-white border-t border-zinc-100'}`}>
+      <div 
+        className={`p-4 ${isExpanded ? 'max-w-3xl w-full mx-auto' : 'bg-white border-t border-zinc-100'}`}
+        style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
+      >
         <div className="relative shadow-sm rounded-xl">
           <input 
             type="text" 

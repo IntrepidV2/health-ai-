@@ -22,3 +22,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# SQLite Database
+*.db
+*.db-journal
+
+# Server
+server/dist
+server/node_modules

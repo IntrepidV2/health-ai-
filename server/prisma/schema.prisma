@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(cuid())
+  email           String           @unique
+  passwordHash    String
+  name            String
+  age             Int              @default(30)
+  condition       String           @default("Hypertension")
+  role            String           @default("PATIENT")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  vitals          VitalRecord[]
+  appointments    Appointment[]
+  labResults      LabResult[]
+  riskAssessments RiskAssessment[]
+}
+
+model VitalRecord {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timestamp        DateTime @default(now())
+  source           String   @default("MANUAL")
+  systolic         Float?
+  diastolic        Float?
+  heartRate        Float?
+  temperature      Float?
+  oxygenSaturation Float?
+  glucose          Float?
+  notes            String?
+
+  @@index([userId, timestamp])
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctor    String
+  specialty String
+  date      String
+  type      String
+  status    String   @default("Upcoming")
+  location  String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model LabResult {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timestamp DateTime @default(now())
+  testName  String
+  value     String
+  unit      String
+  range     String
+  flag      String   @default("NORMAL")
+  source    String   @default("HOSPITAL_UPLOAD")
+
+  @@index([userId])
+}
+
+model RiskAssessment {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level          String   @default("NORMAL")
+  summary        String
+  actionItems    String   // JSON string of string[]
+  alertTriggered Boolean  @default(false)
+  trend          String   @default("STABLE")
+  createdAt      DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

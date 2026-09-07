@@ -27,7 +27,7 @@ async function fileToGenerativePart(file: File): Promise<{ inlineData: { data: s
 // -- OCR / DATA EXTRACTION --
 
 export const extractDataFromDocument = async (file: File): Promise<Partial<VitalRecord>> => {
-  const model = "gemini-3-flash-preview"; 
+  const model = "gemini-2.5-flash"; 
   
   const filePart = await fileToGenerativePart(file);
 
@@ -86,7 +86,7 @@ export const extractDataFromDocument = async (file: File): Promise<Partial<Vital
 // -- ANALYTICS ENGINE (Simulates n8n AI Node) --
 
 export const analyzePatientRisk = async (patient: Patient, newRecord: VitalRecord): Promise<RiskAnalysis> => {
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-2.5-flash";
   
   const prompt = `
     You are an AI medical risk assessment engine for "Pulsera".
@@ -158,7 +158,7 @@ export const analyzePatientRisk = async (patient: Patient, newRecord: VitalRecor
 
 export const chatWithAssistant = async (history: {role: string, parts: {text: string}[]}[], message: string, patient?: Patient) => {
   // Use Gemini 3 Flash for speed and Search tool
-  const model = "gemini-3-flash-preview"; 
+  const model = "gemini-2.5-flash"; 
   
   let systemInstruction = "You are 'Pulse', a helpful medical assistant. You are talking directly to the patient. Use Google Search to verify serious symptoms. Be empathetic, professional, and friendly. CRITICAL: Keep your answers extremely short and precise (max 2 sentences). Avoid long explanations. Always advise consulting a doctor for serious issues.";
 

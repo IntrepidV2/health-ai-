@@ -27,7 +27,7 @@ export const VitalsChart: React.FC<VitalsChartProps> = ({ data, mode = 'TABS', h
   }, [data]);
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm h-full flex flex-col">
+    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-zinc-200 shadow-sm h-full flex flex-col overflow-hidden">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wide">
              {activeTab === 'CARDIO' ? 'Cardiovascular Trends' : 'Metabolic Trends'}
@@ -76,7 +76,7 @@ export const VitalsChart: React.FC<VitalsChartProps> = ({ data, mode = 'TABS', h
               <Line isAnimationActive={false} type="monotone" dataKey="heartRate" stroke="#fb923c" strokeWidth={3} dot={{r: 4, fill: '#fb923c', strokeWidth: 2, stroke: '#fff'}} name="Heart Rate" />
             </LineChart>
           ) : (
-            <LineChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
+            <LineChart data={chartData} margin={{ top: 10, right: 35, bottom: 0, left: -10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" vertical={false} />
               <XAxis 
                 dataKey="dateLabel" 
